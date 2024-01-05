@@ -2,7 +2,16 @@ from django.db import router
 from django.urls import path
 
 from courses.views import LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, LessonUpdateAPIView, \
-    LessonDestroyAPIView
+    LessonDestroyAPIView, CourseViewSet
+
+from courses.apps import CoursesConfig
+app_name=CoursesConfig.name
+
+from rest_framework.routers import DefaultRouter
+
+router = DefaultRouter()
+router.register(r'courses', CourseViewSet, basename='courses')
+
 
 urlpatterns = [
     path('lesson/create/', LessonCreateAPIView.as_view(), name='create_lesson'),
