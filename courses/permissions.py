@@ -15,3 +15,9 @@ class IsModerator(BasePermission):
         if request.user.role == UserRoles.MODERATOR:
             return True
         return False
+
+class IsNotModerator(BasePermission):
+    def has_permission(self, request, view):
+        if request.user.is_authenticated and request.user.role != UserRoles.MODERATOR:
+            return True
+        return False
