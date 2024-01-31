@@ -33,6 +33,10 @@ class LessonCreateAPIView(generics.CreateAPIView):
     serializer_class = LessonSerializer
     permission_classes = [IsAdminUser]
 
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
 class LessonListAPIView(generics.ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
