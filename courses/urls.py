@@ -2,7 +2,8 @@ from django.db import router
 from django.urls import path
 
 from courses.views import LessonCreateAPIView, LessonListAPIView, LessonRetrieveAPIView, LessonUpdateAPIView, \
-    LessonDestroyAPIView, CourseViewSet, PaymentListAPIView, PaymentCreateAPIView, PaymentRetrieveAPIView
+    LessonDestroyAPIView, CourseViewSet, PaymentListAPIView, PaymentCreateAPIView, PaymentRetrieveAPIView, \
+    SubscriptionCreateAPIView, SubscriptionListAPIView, SubscriptionDestroyAPIView
 
 from courses.apps import CoursesConfig
 app_name=CoursesConfig.name
@@ -23,4 +24,8 @@ urlpatterns = [
     path('payment/create/', PaymentCreateAPIView.as_view(), name='create_payment'),
     path('payment/', PaymentListAPIView.as_view(), name='list_payment'),
     path('payment/<int:pk>/', PaymentRetrieveAPIView.as_view(), name='get_payment'),
+
+    path('subscription/create/', SubscriptionCreateAPIView.as_view(), name='create_subscription'),
+    path('subscription/', SubscriptionListAPIView.as_view(), name='list_subscription'),
+    path('subscription/delete/<int:pk>', SubscriptionDestroyAPIView.as_view(), name='delete_subscription'),
               ] + router.urls
