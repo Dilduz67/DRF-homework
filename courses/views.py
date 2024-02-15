@@ -100,7 +100,7 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
             if subscription.course.id == request.data.get('course'):
                 raise PermissionDenied('У вас уже есть подписка на этот курс.')
         if int(self.request.user.id) != int(request.data.get('user')):
-            raise PermissionDenied('Нельзя оформлять подписки на другого пользователя.')
+             raise PermissionDenied('Нельзя оформлять подписки на другого пользователя.')
 
         return super().create(request, *args, **kwargs)
 
