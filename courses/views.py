@@ -1,8 +1,9 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from requests import Response
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.filters import OrderingFilter
-from rest_framework import viewsets, generics
-from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework import viewsets, generics, status
+from rest_framework.permissions import IsAdminUser, IsAuthenticated, AllowAny
 
 from config import settings
 from courses.models import Course, Lesson, Payment, Subscription
@@ -12,6 +13,8 @@ from courses.serializers import CourseSerializer, LessonSerializer, PaymentSeria
     SubscriptionListSerializer
 
 from courses.tasks import send_mails
+import stripe
+from stripe import InvalidRequestError
 
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
@@ -76,6 +79,46 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 #Payments
 class PaymentCreateAPIView(generics.CreateAPIView):
     serializer_class = PaymentSerializer
+    permission_classes = [AllowAny]
+
+    def create(self, request, *args, **kwargs):
+        stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+
+        amount = request.data.get('amount')
+        currency = request.data.get('currency')
+        date = request.data.get('payment_date')
+        payment_method = request.data.get('payment_method')
+        user = request.data.get('user')
+        session_id = request.data.get('session_id')
+        is_paid = request.data.get('is_paid')
+        course_paid = request.data.get('course_paid')
+        lesson_paid = request.data.get('lesson_paid')
+
+
+        payment_intent = stripe.PaymentIntent.create(
+            amount=amount,
+            currency=currency,
+            payment_method_types=["Card"],
+        )
+
+        # Создание объекта платежа и сохранение в базе данных
+        self.perform_create(user, date, amount, currency, payment_method, session_id, is_paid, course_paid, lesson_paid)
+
+        return Response({"message": "Payment created successfully."}, status=status.HTTP_201_CREATED)
+
+    def perform_create(self, user, payment_date, amount, currency, payment_method, session_id, is_paid,  course_paid, lesson_paid):
+        Payment.objects.create(
+            user=user,
+            date=payment_date,
+            amount=amount,
+            currency=currency,
+            pay_method=payment_method,
+            session_id=session_id,
+            is_paid=is_paid,
+            course=course_paid,
+            lesson=lesson_paid
+        )
+
 
 class PaymentListAPIView(generics.ListAPIView):
     serializer_class = PaymentSerializer
@@ -89,7 +132,21 @@ class PaymentListAPIView(generics.ListAPIView):
 class PaymentRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
+    #permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        payment_id = Payment.session_id
+
+        stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
+
+        try:
+            payment_intent = stripe.PaymentIntent.retrieve(payment_id)
+
+            return payment_intent
+        except stripe.error.InvalidRequestError:
+            raise InvalidRequestError("Платеж не найден")
+
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
     serializer_class = SubscriptionSerializer

@@ -35,8 +35,8 @@ class Lesson(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-                                (1, 'Наличные'),
-                                (2, 'Перевод'),
+                                (1, 'Cash'),
+                                (2, 'Card'),
                             ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name='Пользователь')
@@ -47,6 +47,12 @@ class Payment(models.Model):
 
     amount = models.IntegerField(verbose_name='Сумма оплаты')
     pay_method = models.IntegerField(choices=PAYMENT_METHOD_CHOICES, **NULLABLE, verbose_name='Способ оплаты')
+
+    #stripe
+    session_id = models.TextField(verbose_name='id сессии',  **NULLABLE)
+    is_paid = models.BooleanField(verbose_name='статус оплаты', default=False,  **NULLABLE)
+    currency = models.CharField(max_length=10, default='RUB', verbose_name='валюта', **NULLABLE)
+
 
     def __str__(self):
         return f'{self.user} {self.amount}({self.method}) - {self.date}'
