@@ -16,6 +16,9 @@ from courses.tasks import send_mails
 import stripe
 from stripe import InvalidRequestError
 
+from users.models import User
+
+
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
@@ -81,43 +84,21 @@ class PaymentCreateAPIView(generics.CreateAPIView):
     serializer_class = PaymentSerializer
     permission_classes = [AllowAny]
 
-    def create(self, request, *args, **kwargs):
+    def perform_create(self, serializer):
+        lesson = serializer.save()
+        lesson.user = self.request.user
+        new_payment = serializer.save()
         stripe.api_key = "sk_test_4eC39HqLyjWDarjtT1zdp7dc"
-
-        amount = request.data.get('amount')
-        currency = request.data.get('currency')
-        date = request.data.get('payment_date')
-        payment_method = request.data.get('payment_method')
-        user = request.data.get('user')
-        session_id = request.data.get('session_id')
-        is_paid = request.data.get('is_paid')
-        course_paid = request.data.get('course_paid')
-        lesson_paid = request.data.get('lesson_paid')
-
-
         payment_intent = stripe.PaymentIntent.create(
-            amount=amount,
-            currency=currency,
-            payment_method_types=["Card"],
+            amount=1000,
+            currency="usd",
+            automatic_payment_methods={"enabled": True},
         )
+        new_payment.session_id = payment_intent.id
+        new_payment.amount = payment_intent.amount
+        new_payment.save()
 
-        # Создание объекта платежа и сохранение в базе данных
-        self.perform_create(user, date, amount, currency, payment_method, session_id, is_paid, course_paid, lesson_paid)
-
-        return Response({"message": "Payment created successfully."}, status=status.HTTP_201_CREATED)
-
-    def perform_create(self, user, payment_date, amount, currency, payment_method, session_id, is_paid,  course_paid, lesson_paid):
-        Payment.objects.create(
-            user=user,
-            date=payment_date,
-            amount=amount,
-            currency=currency,
-            pay_method=payment_method,
-            session_id=session_id,
-            is_paid=is_paid,
-            course=course_paid,
-            lesson=lesson_paid
-        )
+        return super().perform_create(new_payment)
 
 
 class PaymentListAPIView(generics.ListAPIView):

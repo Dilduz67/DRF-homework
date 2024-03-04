@@ -35,8 +35,8 @@ class Lesson(models.Model):
 
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
-                                (1, 'Cash'),
-                                (2, 'Card'),
+                                ('cash', 'Cash'),
+                                ('card', 'Card'),
                             ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE, verbose_name='Пользователь')
@@ -46,7 +46,7 @@ class Payment(models.Model):
     lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, **NULLABLE, verbose_name='Урок')
 
     amount = models.IntegerField(verbose_name='Сумма оплаты')
-    pay_method = models.IntegerField(choices=PAYMENT_METHOD_CHOICES, **NULLABLE, verbose_name='Способ оплаты')
+    pay_method = models.CharField(max_length=10, choices=PAYMENT_METHOD_CHOICES, **NULLABLE, verbose_name='Способ оплаты')
 
     #stripe
     session_id = models.TextField(verbose_name='id сессии',  **NULLABLE)
