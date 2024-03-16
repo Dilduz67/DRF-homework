@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+import  datetime
 
 import rest_framework
 
@@ -42,6 +43,7 @@ INSTALLED_APPS = [
     'drf_yasg',
 
     'rest_framework_simplejwt',
+    'django_celery_beat',
 
     'rest_framework',
     'django_filters',
@@ -152,3 +154,17 @@ EMAIL_PORT = 465
 EMAIL_HOST_USER = ''
 EMAIL_HOST_PASSWORD = ''
 EMAIL_USE_SSL = True
+
+# Настройки для Celery
+# URL-адрес брокера сообщений
+CELERY_BROKER_URL = 'redis://localhost:6379' # Например, Redis, который по умолчанию работает на порту 6379
+# URL-адрес брокера результатов, также Redis
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+
+# Настройки для Celery
+CELERY_BEAT_SCHEDULE = {
+    'check_last_login': {
+        'task': 'courses.tasks.check_last_login',   # Путь к задаче
+        'schedule': datetime.timedelta(days=1),     # Расписание выполнения задачи
+    },
+}

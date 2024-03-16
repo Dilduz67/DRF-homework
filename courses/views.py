@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from django_filters.rest_framework import DjangoFilterBackend
 from requests import Response
 from rest_framework.exceptions import PermissionDenied
@@ -44,6 +46,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.save()
         pk = self.kwargs.get('pk')
         course = Course.objects.get(pk=pk)
+        course.last_update = datetime.now()
         subscriptions = Subscription.objects.filter(course=course, is_active=True)
         from_email = settings.EMAIL_HOST_USER
         emails = list(subscriptions.values_list('user__email', flat=True))

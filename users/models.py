@@ -14,6 +14,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=35, verbose_name='Телефон', **NULLABLE)
     city = models.CharField(max_length=150, verbose_name='Город', **NULLABLE)
     role = models.CharField(max_length=9, choices=UserRoles.choices, default=UserRoles.MEMBER)
+    last_login = models.DateTimeField(auto_now=True, verbose_name='Дата последнего входа', **NULLABLE)
 
     is_active = models.BooleanField(default=False, verbose_name='Активация')
 
