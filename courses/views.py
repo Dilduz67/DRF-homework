@@ -51,7 +51,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         from_email = settings.EMAIL_HOST_USER
         emails = list(subscriptions.values_list('user__email', flat=True))
 
-        send_mails(emails, 'Course updated', 'Course updated', from_email)
+        send_mails.delay(emails, 'Course updated', 'Course updated', from_email)
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
